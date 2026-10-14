@@ -9,14 +9,14 @@
 class ConfigurationLoader {
     struct Configuration {
         std::string internet_protocol = "127.0.0.1";
-        int16_t port = 80;
+        std::uint16_t port = 80;
 
         std::string pub_cert = "";
         std::string priv_cert = "";
 
 
         std::string target_url = "google.com";
-        int16_t target_port = 80;
+        std::uint16_t target_port = 80;
         
     } CurrentConfiguration;
 

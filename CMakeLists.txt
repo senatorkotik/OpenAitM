@@ -7,9 +7,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Boost REQUIRED CONFIG COMPONENTS asio beast)
-
 include(FetchContent)
+
+FetchContent_Declare(
+  asiocmake
+  GIT_REPOSITORY "https://github.com/OlivierLDff/asio.cmake"
+  GIT_TAG        "main"
+)
+FetchContent_MakeAvailable(asiocmake)
+
 
 FetchContent_Declare(
     spdlog
