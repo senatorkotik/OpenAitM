@@ -34,6 +34,6 @@ class ConfigurationLoader {
 
         const Configuration& get_conf();
 
-        void set_conf(std::filesystem::path& path);
-        int set_conf(CLI::App& app);
+        void set_conf(std::filesystem::path path);
+        void set_conf(CLI::App& app);
 };

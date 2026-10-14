@@ -2,6 +2,7 @@
 #include "CLI/CLI.hpp"
 
 #include <spdlog/spdlog.h>
+#include <toml++/impl/parse_error.hpp>
 #include <toml++/impl/parser.hpp>
 
 ConfigurationLoader::ConfigurationLoader() {
@@ -16,11 +17,39 @@ ConfigurationLoader::OperationSystem ConfigurationLoader::get_current_OS() {
     #endif
 }
 
-void ConfigurationLoader::set_conf(std::filesystem::path& path) {
-    toml::table tbl = toml::parse_file(path.string());
+void ConfigurationLoader::set_conf(std::filesystem::path path) {
+    try {
+        const toml::table tbl = toml::parse_file(path.string());
+
+
+    if (const auto* server = tbl["Server"].as_table()) {
+        if (auto v = (*server)["ip"].value<std::string>())
+            CurrentConfiguration.internet_protocol = *v;
+
+        if (auto v = (*server)["port"].value<std::int64_t>())
+            CurrentConfiguration.port = static_cast<int>(*v);
+
+        if (auto v = (*server)["pub_cert"].value<std::string>())
+            CurrentConfiguration.pub_cert = *v;
+
+        if (auto v = (*server)["priv_cert"].value<std::string>())
+            CurrentConfiguration.priv_cert = *v;
+    }
+
+    if (const auto* client = tbl["Client"].as_table()) {
+        if (auto v = (*client)["url"].value<std::string>())
+            CurrentConfiguration.target_url = *v;
+
+        if (auto v = (*client)["port"].value<std::int64_t>())
+            CurrentConfiguration.target_port = static_cast<int>(*v);
+    }
+    }
+    catch (toml::parse_error& error) {
+        spdlog::error(path.string() + ": "+ error.what());
+    }
 }
 
-int ConfigurationLoader::set_conf(CLI::App& app) {
+void ConfigurationLoader::set_conf(CLI::App& app) {
 
     app.add_option(
         "--internet_protocol,--ip",
@@ -66,10 +95,6 @@ int ConfigurationLoader::set_conf(CLI::App& app) {
         },
         "Configuration file"
     );
-    
-
-
-    return 0;
 }
 const ConfigurationLoader::Configuration& ConfigurationLoader::get_conf() {
     return ConfigurationLoader::CurrentConfiguration;
@@ -85,11 +110,11 @@ void ConfigurationLoader::set_standard_os_conf() {
 
     if(CurrentOperationSystem == OperationSystem::Linux) {
         std::string home_conf = std::getenv("XDG_CONFIG_HOME");
-        home_conf += "/MITMProxyLite";
+        home_conf += "/openaitm/config.toml";
 
-        std::string sys_conf = "/etc/MITMProxyLite";
+        std::string sys_conf = "/etc/openaitm/config.toml";
 
-        //load_file_conf(sys_conf);
-        //load_file_conf(home_conf);
+        set_conf(sys_conf);
+        set_conf(home_conf);
     }
 }
